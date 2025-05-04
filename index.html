@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Image Chatbot</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Text to Image Chatbot</h1>
+        <div id="chat-history"></div>
+        <input type="text" id="textInput" placeholder="Enter your text here">
+        <button onclick="generate()">Generate</button>
+    </div>
+    <script>
+        const chatHistory = [];
+
+        function renderChatHistory() {
+            const chatHistoryDiv = document.getElementById('chat-history');
+            chatHistoryDiv.innerHTML = '';
+            chatHistory.forEach(chat => {
+                const chatItem = document.createElement('div');
+                chatItem.classList.add('chat-item');
+                chatItem.innerHTML = `<p><strong>You:</strong> ${chat.text}</p>
+                                      <img src="${chat.image}" alt="Generated Image" class="generated-image">
+                                      <a href="${chat.image}" download="generated_image.png" class="download-link">Download Image</a>`;
+                chatHistoryDiv.appendChild(chatItem);
+            });
+        }
+
+        async function generate() {
+            const text = document.getElementById('textInput').value.trim();
+            if (!text) {
+                alert("Please enter some text.");
+                return;
+            }
+            document.getElementById('textInput').value = ''; // Clear input field
+
+            const chatHistoryDiv = document.getElementById('chat-history');
+            const chatItem = document.createElement('div');
+            chatItem.classList.add('chat-item');
+            chatItem.innerHTML = `<p><strong>You:</strong> ${text}</p><div class="loader"></div>`;
+            chatHistoryDiv.appendChild(chatItem);
+
+            const response = await fetch('/generate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({text: text})
+            });
+            const data = await response.json();
+
+            if (data.image) {
+                chatHistory.push({text: text, image: data.image});
+                renderChatHistory();
+            } else {
+                chatItem.innerHTML = `<p><strong>You:</strong> ${text}</p><p>Error: ${data.error}</p>`;
+            }
+
+            // Scroll to the bottom of the chat history
+            chatHistoryDiv.scrollTop = chatHistoryDiv.scrollHeight;
+        }
+
+        // Initial render
+        renderChatHistory();
+    </script>
+</body>
+</html>
