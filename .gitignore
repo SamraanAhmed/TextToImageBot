@@ -1,0 +1,8 @@
+nano .gitignore  # For creating or editing with nano
+# Ignore node_modules directory
+node_modules/
+# Ignore envgit directory
+*.env
+
+
+.env
